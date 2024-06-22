@@ -1,0 +1,50 @@
+# Load necessary libraries
+library(GGally)
+library(scatterplot3d)
+library(plotly)
+library(ggplot2)
+library(ggiraphExtra)
+library(reshape2)
+
+# Create the dataset
+data <- data.frame(
+  ID = 1:5,
+  X1 = c(5, 7, 6, 8, 4),
+  X2 = c(10, 12, 11, 9, 13),
+  X3 = c(15, 14, 13, 16, 17)
+)
+
+# 1. Create a pairwise scatter plot matrix of X1, X2, X3
+ggpairs(data[, -1])
+
+# 2. Generate a 3D scatter plot of X1, X2, and X3
+scatterplot3d(data$X1, data$X2, data$X3, pch = 19, color = "blue", main = "3D Scatter Plot")
+
+# Using plotly for interactive 3D plot
+plot_ly(data, x = ~X1, y = ~X2, z = ~X3, type = 'scatter3d', mode = 'markers')
+
+# 3. Plot a parallel coordinates plot of X1, X2, X3
+library(GGally)
+ggparcoord(data, columns = 2:4, groupColumn = 1, scale = "globalminmax", title = "Parallel Coordinates Plot")
+
+# 4. Create a radar chart to compare values of X1, X2, X3 for ID 1
+radar_data <- data[data$ID == 1, -1]
+colnames(radar_data) <- c("X1", "X2", "X3")
+radar_data <- rbind(rep(max(radar_data), 3), rep(min(radar_data), 3), radar_data)
+
+# Convert to long format
+radar_data_long <- melt(radar_data)
+colnames(radar_data_long) <- c("Variable", "Measure")
+
+# Plot radar chart
+ggRadar(radar_data_long, aes(group = 1))
+
+# 5. Generate a heatmap showing correlations between X1, X2, X3
+cor_matrix <- cor(data[, -1])
+melted_cor_matrix <- melt(cor_matrix)
+
+ggplot(data = melted_cor_matrix, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = 0) +
+  theme_minimal() +
+  labs(title = "Correlation Heatmap", x = "Variable", y = "Variable")
